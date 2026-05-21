@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: omics
+      POSTGRES_PASSWORD: omics
+      POSTGRES_DB: omics
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omics -d omics"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg2://omics:omics@db:5432/omics
+      # Set DATA_SOURCE=gdc to pull a small real subset from the GDC API instead.
+      DATA_SOURCE: ${DATA_SOURCE:-synthetic}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    environment:
+      VITE_API_TARGET: http://backend:8000
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+
+volumes:
+  pgdata:
