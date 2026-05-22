@@ -5,7 +5,12 @@ import react from "@vitejs/plugin-react";
 // proxies /api there so the browser only ever talks to the frontend origin.
 const API_TARGET = process.env.VITE_API_TARGET || "http://backend:8000";
 
+// Base public path. "/" for local/Docker; for GitHub project Pages it must be
+// "/<repo>/", injected by the deploy workflow via VITE_BASE.
+const BASE = process.env.VITE_BASE || "/";
+
 export default defineConfig({
+  base: BASE,
   plugins: [react()],
   server: {
     host: true,

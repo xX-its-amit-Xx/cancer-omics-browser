@@ -1,5 +1,10 @@
-// Thin fetch wrapper. All calls are same-origin under /api (proxied to the backend).
-const BASE = "/api";
+// Thin fetch wrapper.
+//   * Local/Docker: VITE_API_BASE is unset, so calls go to same-origin "/api"
+//     (Vite proxies it to the backend service).
+//   * Static hosting (GitHub Pages): VITE_API_BASE is the deployed backend origin,
+//     e.g. https://cancer-omics-api.onrender.com, and calls go cross-origin.
+const ROOT = import.meta.env.VITE_API_BASE || "";
+const BASE = `${ROOT}/api`;
 
 async function get(path, params = {}) {
   const qs = new URLSearchParams(

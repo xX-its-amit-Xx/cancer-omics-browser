@@ -68,6 +68,31 @@ port 5173 needs to be public.
 
 ---
 
+## Hosted deployment (GitHub Pages + Render)
+
+The app can run with **no Codespace and no local Docker**: the static frontend on
+**GitHub Pages**, the API + Postgres on **Render's free tier**.
+
+**1. Deploy the backend to Render (one-time, needs your Render login):**
+   - Go to [render.com](https://render.com) → **New ▸ Blueprint** → connect this repo.
+   - Render reads [`render.yaml`](render.yaml) and provisions the `cancer-omics-api`
+     web service + a free `cancer-omics-db` Postgres. Click **Apply**.
+   - When live, copy the service URL, e.g. `https://cancer-omics-api.onrender.com`.
+
+**2. Point the frontend at it:**
+   - In this GitHub repo: **Settings ▸ Secrets and variables ▸ Actions ▸ Variables**,
+     add a repository variable `VITE_API_BASE` = the Render URL (no trailing slash).
+   - **Settings ▸ Pages ▸ Source → GitHub Actions.**
+
+**3. Deploy the frontend:** the [`pages.yml`](.github/workflows/pages.yml) workflow runs
+   on push (or **Actions ▸ Deploy frontend to GitHub Pages ▸ Run workflow**). It builds
+   with `VITE_API_BASE` baked in and publishes to
+   `https://<user>.github.io/cancer-omics-browser/`.
+
+Notes: CORS on the API is open (`*`), so the Pages origin can call Render directly. The
+Render free web service sleeps after ~15 min idle — the first request cold-starts in
+~30-60s, then it's fast.
+
 ## Data schema
 
 Three tables (see [`backend/app/models.py`](backend/app/models.py)).
